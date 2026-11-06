@@ -1,0 +1,19 @@
+# Runs on every pull request into main: the release gate.
+name: PR check
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+      - name: List database changes in this PR
+        run: |
+          git fetch -q origin main
+          git diff --name-status origin/main...HEAD -- supabase/migrations || true
