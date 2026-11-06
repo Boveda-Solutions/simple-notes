@@ -17,3 +17,16 @@ jobs:
         run: |
           git fetch -q origin main
           git diff --name-status origin/main...HEAD -- supabase/migrations || true
+
+      # Migrations run against LIVE on merge. Data-changing statements
+      # (Lovable sometimes cleans up its own test rows this way) must be
+      # reviewed by a person before release.
+      - name: Flag data-changing SQL for review
+        run: |
+          files=$(git diff --name-only --diff-filter=AM origin/main...HEAD -- 'supabase/migrations/*.sql')
+          [ -z "$files" ] && exit 0
+          hits=$(grep -inE '^\s*(delete|update|truncate|drop)\b' $files || true)
+          if [ -n "$hits" ]; then
+            echo "::warning::Migrations in this PR change or remove data. Review before merging:"
+            echo "$hits"
+          fi
