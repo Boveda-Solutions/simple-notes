@@ -24,7 +24,8 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const { data: notes } = useSuspenseQuery(notesQuery);
+  const initialNotes = Route.useLoaderData();
+  const { data: notes } = useSuspenseQuery({ ...notesQuery, initialData: initialNotes });
   const queryClient = useQueryClient();
   const save = useServerFn(saveNote);
   const [editing, setEditing] = useState(false);
