@@ -69,7 +69,7 @@ function Index() {
         <ul aria-label="Notes" className="divide-y divide-border">
           {notes.map((note) => <li key={note.id} className="whitespace-pre-wrap break-words py-4">{note.body}</li>)}
         </ul>
-        {notes.length === 0 && <p className="text-center text-muted-foreground">No notes yet</p>}
+        {notes.length === 0 && <p className="text-center text-muted-foreground">No notes yet.</p>}
       </main>
     </div>
   );
