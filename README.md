@@ -1,14 +1,16 @@
-# Welcome to your Lovable project
+# Simple Notes
+
+Front-end only, no backend: do not add a database, authentication, Lovable Cloud or any server code. Build a simple 'Notes' app shell for a test project called lovable-env-test: a header with the app name, an empty notes list with placeholder text 'No notes yet', and a disabled 'New note' button. Keep it minimal.
 
 This project was built with [Lovable](https://lovable.dev).
 
 ## Build with Lovable
 
-Open your project in the [Lovable editor](https://lovable.dev) and keep building.
+Continue developing this project in the [Lovable editor](https://lovable.dev/projects/fada50f3-dfe5-4067-bc1e-716ba2f320c8).
 
 - **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
-- **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
+- **Stay in sync**: every change made in Lovable is committed straight to this repository.
+- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
 
 ## Development
 
@@ -20,10 +22,3 @@ cd <repository-name>
 npm i
 npm run dev
 ```
-
-## Built with
-
-- TanStack Start
-- TypeScript
-- React
-- Tailwind CSS
