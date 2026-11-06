@@ -56,8 +56,24 @@ jobs:
 
       - run: bun run build
 
+      - name: Refuse to ship anything that references the test database
+        run: |
+          test_ref=$(sed -n 's/^project_id = "\(.*\)"/\1/p' supabase/config.toml)
+          if grep -rq "$test_ref" .output; then
+            echo "::error::Build output references the test database ($test_ref)"; exit 1
+          fi
+
+      # Server code reads SUPABASE_URL / SUPABASE_PUBLISHABLE_KEY at runtime.
+      # Lovable injects TEST values in its own hosting; here we set LIVE ones.
       - name: Deploy to Cloudflare
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-        run: npx -y wrangler@4 deploy
+          LIVE_URL: ${{ vars.LIVE_SUPABASE_URL }}
+          LIVE_KEY: ${{ vars.LIVE_SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          npx -y wrangler@4 deploy \
+            --var "SUPABASE_URL:${LIVE_URL}" \
+            --var "SUPABASE_PUBLISHABLE_KEY:${LIVE_KEY}" \
+            --var "VITE_SUPABASE_URL:${LIVE_URL}" \
+            --var "VITE_SUPABASE_PUBLISHABLE_KEY:${LIVE_KEY}"
