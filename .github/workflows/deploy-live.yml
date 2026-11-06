@@ -25,15 +25,37 @@ jobs:
         with:
           version: latest
 
+      # Lovable commits a .env pointing at the TEST project, and the Supabase
+      # CLI reads SUPABASE_PROJECT_ID from it. Rewrite it with LIVE values so
+      # every tool in this job sees only the live project. Not committed.
+      - name: Use live settings for this job
+        env:
+          LIVE_REF: ${{ vars.LIVE_SUPABASE_PROJECT_REF }}
+          LIVE_URL: ${{ vars.LIVE_SUPABASE_URL }}
+          LIVE_KEY: ${{ vars.LIVE_SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          git show HEAD:supabase/config.toml | sed -n 's/^project_id = "\(.*\)"/\1/p' > /tmp/test_ref
+          {
+            echo "SUPABASE_PROJECT_ID=\"${LIVE_REF}\""
+            echo "SUPABASE_URL=\"${LIVE_URL}\""
+            echo "SUPABASE_PUBLISHABLE_KEY=\"${LIVE_KEY}\""
+            echo "VITE_SUPABASE_PROJECT_ID=\"${LIVE_REF}\""
+            echo "VITE_SUPABASE_URL=\"${LIVE_URL}\""
+            echo "VITE_SUPABASE_PUBLISHABLE_KEY=\"${LIVE_KEY}\""
+          } > .env
+          sed -i -E "s/^project_id = .*/project_id = \"${LIVE_REF}\"/" supabase/config.toml
+          if grep -rq "$(cat /tmp/test_ref)" .env supabase/config.toml; then
+            echo "::error::Test project still referenced after retargeting"; exit 1
+          fi
+
       - name: Apply database migrations to live
         if: hashFiles('supabase/migrations/*.sql') != ''
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_PASSWORD: ${{ secrets.LIVE_DB_PASSWORD }}
           LIVE_REF: ${{ vars.LIVE_SUPABASE_PROJECT_REF }}
+          SUPABASE_PROJECT_ID: ${{ vars.LIVE_SUPABASE_PROJECT_REF }}
         run: |
-          # Lovable's config.toml names the TEST project; retarget it for this job only.
-          sed -i -E "s/^project_id = .*/project_id = \"${LIVE_REF}\"/" supabase/config.toml
           supabase link --project-ref "$LIVE_REF"
           supabase db push --linked --dry-run 2>&1 | tee /tmp/dry.txt
           if ! grep -q "Target: .*${LIVE_REF}" /tmp/dry.txt; then
