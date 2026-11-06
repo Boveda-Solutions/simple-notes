@@ -61,7 +61,7 @@ jobs:
           if ! grep -q "Target: .*${LIVE_REF}" /tmp/dry.txt; then
             echo "::error::Migration target is not the live project; refusing to push"; exit 1
           fi
-          supabase db push --linked
+          supabase db push --linked --yes
 
       # Lovable hard-codes the TEST database in this generated file.
       # Swap in LIVE for this build only; nothing is committed.
